@@ -1,16 +1,17 @@
-import hashlib
+import bcrypt
 
-def HashStringInput():
-    
-    string = input().encode('utf-8')
+def  HashPassword():
+    #input a password
+    #the password is transformed into a byte object because bcrypt expects bytes
+    password = input().encode('utf-8')
 
-    sha256 = hashlib.sha256()
+    #generate a salt
+    #rounds parameter controls computational cost (higher == slower but more secure)
+    salt = bcrypt.gensalt(rounds=12)
+    #hashes password using hashpw method
+    #result of this is a byte object
+    hashedPassword = bcrypt.hashpw(password, salt)
 
-    sha256.update(string)
+    print(hashedPassword)
 
-    stringHash = sha256.hexdigest()
-
-    print(f'hash: {stringHash}')
-
-
-HashStringInput()
+HashPassword()
