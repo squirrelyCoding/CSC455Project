@@ -1,4 +1,5 @@
 import pandas as pd
+import gui
 
 arp_table = pd.DataFrame({
     'IP_Address': ['192.168.1.1', '192.168.1.10', '192.168.1.11', '192.168.1.1'],
