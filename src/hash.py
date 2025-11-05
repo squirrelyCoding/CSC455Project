@@ -13,5 +13,3 @@ def  HashPassword():
     hashedPassword = bcrypt.hashpw(password, salt)
 
     print(hashedPassword)
-
-HashPassword()
