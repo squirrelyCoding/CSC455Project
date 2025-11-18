@@ -1,39 +1,51 @@
-import streamlit as st ##Import Streamlit
-import random
-import string
+#import streamlit as st  # Import Streamlit
+import streamlit as st  # Import Streamlit
+from .passwordLogic import check_strength, generate_strong_password, generate_password as pl_generate_password
 
 
 def is_user():
-    return st.session_state.get("user_true", False) ##Returns user as false default
+    return st.session_state.get("user_true", False)  # Returns user as false default
 
 
-def strength(password):
-    score = 0 ##Set score however determined to default 0
-    if score < 33: st.warning("Weak password")
-    elif score < 66: st.info("Moderate password")
-    else: st.success("Strong password")
+def strength(password: str):
+    """Display strength using the logic in passwordLogic.check_strength."""
+    result = check_strength(password)
+    score = result.get("score", 0)
+    rating = result.get("rating", "")
+    suggestions = result.get("suggestions", [])
+
+    # show a simple progress bar (0-100 mapped to 0.0-1.0)
+    st.progress(score / 100)
+    if rating:
+        st.markdown(f"**Strength:** {rating} ({score}%)")
+    if suggestions:
+        st.markdown("**Suggestions to improve:**")
+        for s in suggestions:
+            st.write(f"- {s}")
+
 
 def generate_password(length=12):
-    chars = string.ascii_letters + string.digits + string.punctuation
-    return ''.join(random.choice(chars) for _ in range(length))
+    # keep compatibility with a simple wrapper to the passwordLogic generator
+    return pl_generate_password(length)
+
 
 def run_app():
     ##Page setup
     st.set_page_config(
-            page_title="Password Strength Manager",  
-            page_icon=":closed_lock_with_key:",              
-            layout="wide",             
-            initial_sidebar_state="expanded"  
+            page_title="Password Strength Manager",
+            page_icon=":closed_lock_with_key:",
+            layout="wide",
+            initial_sidebar_state="expanded"
             )
-        
+
     st.markdown(
         """
         <style>
         .stApp {
-            background-color: #f0f8ff; 
-        }""", 
+            background-color: #f0f8ff;
+        }""",
         unsafe_allow_html=True)
-    
+
 
     if "user_true" not in st.session_state:
         st.session_state["user_true"] = False
@@ -79,7 +91,7 @@ def run_app():
         with col2:
             st.markdown("<br></br>",  unsafe_allow_html=True)
             if st.button("Generate"):
-                new_pass = generate_password()
+                new_pass = generate_strong_password()
                 st.session_state["password_input"] = new_pass
                 password = new_pass
 
@@ -113,4 +125,3 @@ def run_app():
             st.markdown(f"Saved Password: {st.session_state['saved_password']}")
         else:
             st.warning("You must log in to view saved passwords.")
-       
