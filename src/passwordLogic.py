@@ -1,6 +1,7 @@
 import string
 import secrets
 from typing import Dict, List
+import bcrypt
 
 
 def generate_password(length: int = 16) -> str:
@@ -75,3 +76,11 @@ def check_strength(password: str) -> Dict[str, object]:
 def check_password_strength(password: str) -> str:
     result = check_strength(password)
     return f"{result['rating']} ({result['score']}%)"
+
+def  HashPassword(password):
+    #generate a salt
+    #rounds parameter controls computational cost (higher == slower but more secure)
+    salt = bcrypt.gensalt(rounds=12)
+    hash_bytes = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return  hash_bytes.decode('utf-8')
+
