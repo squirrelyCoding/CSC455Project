@@ -1,14 +1,7 @@
-#import hash
 import gui
-import pandas as pd
-import gui
-import streamlit as st
-from database.setup import initialize_database, get_connection
+from database.setup import initialize_database
 
-#To run go to terminal and write streamlit run main.py
-gui.run_app()
+if __name__ == "__main__":
+	gui.run_app()
 
-#creates the database tables if they are missing
 initialize_database()
-
-#hash.HashPassword()
