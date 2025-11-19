@@ -1,6 +1,7 @@
 import streamlit as st ##Import Streamlit
 import random
 import string
+from passwordLogic import check_strength, generate_password, generate_strong_password as pl_generate_password
 
 
 def is_user():
@@ -8,15 +9,23 @@ def is_user():
 
 
 def strength(password):
-    score = 0 ##Set score however determined to default 0
-    if score < 33: st.warning("Weak password")
-    elif score < 66: st.info("Moderate password")
-    else: st.success("Strong password")
+    result = check_strength(password)
+    score = result.get("score", 0)
+    rating = result.get("rating", "")
+    suggestions = result.get("suggestions", [])
 
-def generate_password(length=12):
-    chars = string.ascii_letters + string.digits + string.punctuation
-    return ''.join(random.choice(chars) for _ in range(length))
+    if rating == "Strong":
+        st.success(f"{rating} password — {score}%")
+    elif rating == "Medium":
+        st.info(f"{rating} password — {score}%")
+    else:
+        st.warning(f"{rating} password — {score}%")
 
+    if suggestions:
+        with st.expander("Suggestions"):
+            for s in suggestions:
+                st.write(f"- {s}")
+ 
 def run_app():
     ##Page setup
     st.set_page_config(
