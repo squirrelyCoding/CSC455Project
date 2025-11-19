@@ -1,29 +1,34 @@
-import streamlit as st
+import streamlit as st ##Import Streamlit
+import random
+import string
+from passwordLogic import check_strength, generate_password, generate_strong_password as pl_generate_password
 
 def is_logged_in():
     # Replace this logic with actual authentication check
     return st.session_state.get("logged_in", False)
 
 # Replace with  actual strength check
-def strength():
-    return st.session_state["check_strength"]
 
+def strength(password):
+    result = check_strength(password)
+    score = result.get("score", 0)
+    rating = result.get("rating", "")
+    suggestions = result.get("suggestions", [])
+
+    if rating == "Strong":
+        st.success(f"{rating} password — {score}%")
+    elif rating == "Medium":
+        st.info(f"{rating} password — {score}%")
+    else:
+        st.warning(f"{rating} password — {score}%")
+
+    if suggestions:
+        with st.expander("Suggestions"):
+            for s in suggestions:
+                st.write(f"- {s}")
+ 
 def run_app():
-
-    #Sample login for save password
-    if "logged_in" not in st.session_state:
-        st.session_state["logged_in"] = False
-
-    if "saved_password" not in st.session_state:
-        st.session_state["saved_password"] = ""
-
-    if st.sidebar.button("Login"):
-        st.session_state["logged_in"] = True
-
-    if st.sidebar.button("Passwords",  disabled= not is_logged_in()):
-        ##want to bring up new page with the db for the passwords
-        return True
-
+    ##Page setup
     st.set_page_config(
         page_title="Password Manager",  
         page_icon=":closed_lock_with_key:",              
