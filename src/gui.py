@@ -1,24 +1,44 @@
-#import streamlit as st  # Import Streamlit
-import streamlit as st  # Import Streamlit
-from .passwordLogic import check_strength, generate_strong_password, generate_password as pl_generate_password
+import streamlit as st
 
-def is_logged_in():
-    # Replace this logic with actual authentication check
+# Import password logic robustly: try package-style, relative, then top-level fallback.
+try:
+    # If the project is installed or run from repository root, this should work
+    from src.passwordLogic import (
+        check_strength,
+        generate_strong_password,
+        generate_password as pl_generate_password,
+    )
+except Exception:
+    try:
+        # When running as a module inside `src` (rare with streamlit), use relative import
+        from .passwordLogic import (
+            check_strength,
+            generate_strong_password,
+            generate_password as pl_generate_password,
+        )
+    except Exception:
+        # Fallback for simpler dev runs where a top-level `passwordLogic.py` exists
+        from passwordLogic import (
+            check_strength,
+            generate_strong_password,
+            generate_password as pl_generate_password,
+        )
+
+
+def is_logged_in() -> bool:
     return st.session_state.get("logged_in", False)
 
-def is_user():
-    return st.session_state.get("user_true", False)  # Returns user as false default
 
-def run_app():
+def is_user() -> bool:
+    return st.session_state.get("user_true", False)
 
-def strength(password: str):
-    """Display strength using the logic in passwordLogic.check_strength."""
+
+def strength(password: str) -> None:
     result = check_strength(password)
     score = result.get("score", 0)
     rating = result.get("rating", "")
     suggestions = result.get("suggestions", [])
 
-    # show a simple progress bar (0-100 mapped to 0.0-1.0)
     st.progress(score / 100)
     if rating:
         st.markdown(f"**Strength:** {rating} ({score}%)")
@@ -28,91 +48,32 @@ def strength(password: str):
             st.write(f"- {s}")
 
 
-def generate_password(length=12):
-    # keep compatibility with a simple wrapper to the passwordLogic generator
+def generate_password(length: int = 12) -> str:
     return pl_generate_password(length)
 
 
-    st.set_page_config(
-            page_title="Password Strength Manager",
-            page_icon=":closed_lock_with_key:",
-            layout="wide",
-            initial_sidebar_state="expanded"
-            )
+def run_app() -> None:
+    st.set_page_config(page_title="Password Strength Manager", page_icon=":closed_lock_with_key:", layout="wide")
 
-    st.markdown(
-        """
-        <style>
-        .stApp {
-            background-color: #f0f8ff;
-        }""",
-        unsafe_allow_html=True)
+    st.title("Password Strength Manager")
 
+    col1, col2 = st.columns([3, 1])
 
-    col1, col2, col3 = st.columns([3, 1, 0.5])
+    with col1:
+        pwd_in = st.text_input("Enter a password to check", key="password_input")
+        if st.button("Check Strength"):
+            strength(pwd_in)
 
-        with col2:
-            st.markdown("<br></br>",  unsafe_allow_html=True)
-            if st.button("Generate"):
-                new_pass = generate_strong_password()
-                st.session_state["password_input"] = new_pass
-                password = new_pass
+    with col2:
+        if st.button("Generate Strong Password"):
+            new_pass = generate_strong_password()
+            st.session_state["password_input"] = new_pass
+            st.success("Generated strong password and placed it in the input field.")
 
-
-
-    import streamlit as st
-    from passwordLogic import check_strength, generate_strong_password, generate_password as pl_generate_password
-
-
-    def is_logged_in() -> bool:
-        return st.session_state.get("logged_in", False)
-
-
-    def is_user() -> bool:
-        return st.session_state.get("user_true", False)
-
-
-    def strength(password: str) -> None:
-        result = check_strength(password)
-        score = result.get("score", 0)
-        rating = result.get("rating", "")
-        suggestions = result.get("suggestions", [])
-
-        st.progress(score / 100)
-        if rating:
-            st.markdown(f"**Strength:** {rating} ({score}%)")
-        if suggestions:
-            st.markdown("**Suggestions to improve:**")
-            for s in suggestions:
-                st.write(f"- {s}")
-
-
-    def generate_password(length: int = 12) -> str:
-        return pl_generate_password(length)
-
-
-    def run_app() -> None:
-        st.set_page_config(page_title="Password Strength Manager", page_icon=":closed_lock_with_key:", layout="wide")
-
-        st.title("Password Strength Manager")
-
-        col1, col2 = st.columns([3, 1])
-
-        with col1:
-            pwd_in = st.text_input("Enter a password to check", key="password_input")
-            if st.button("Check Strength"):
-                strength(pwd_in)
-
-        with col2:
-            if st.button("Generate Strong Password"):
-                new_pass = generate_strong_password()
-                st.session_state["password_input"] = new_pass
-                st.success("Generated strong password and placed it in the input field.")
-
-        # Saved passwords demo area
-        st.markdown("---")
-        if st.checkbox("Show saved password area"):
-            if is_user():
-                st.write(st.session_state.get("saved_password", "(none)"))
-            else:
-                st.info("You must log in to view saved passwords.")
+    # Saved passwords demo area
+    st.markdown("---")
+    if st.checkbox("Show saved password area"):
+        if is_user():
+            st.write(st.session_state.get("saved_password", "(none)"))
+        else:
+            st.info("You must log in to view saved passwords.")
