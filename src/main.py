@@ -1,14 +1,17 @@
 #import hash
 import gui
 import pandas as pd
-import gui
 import streamlit as st
 from database.setup import initialize_database, get_connection
 
-#To run go to terminal and write streamlit run main.py
+
+# Streamlit reruns the script whenever widgets update.
+# We prevent multiple database initializations by storing a flag
+# in st.session_state.
+if "db_initialized" not in st.session_state:
+    initialize_database()
+    st.session_state["db_initialized"] = True
+
 gui.run_app()
 
-#creates the database tables if they are missing
-initialize_database()
 
-#hash.HashPassword()
