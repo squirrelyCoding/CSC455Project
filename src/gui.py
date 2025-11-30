@@ -149,17 +149,24 @@ def run_app():
         )
 
         col1, col2 = st.columns([3, 1])
+
+        # ----- FIX: Handle generate button BEFORE showing input box -----
+        with col2:
+            if "password_input" not in st.session_state:
+                st.session_state["password_input"] = ""
+
+            if st.button("Generate Password"):
+                st.session_state["password_input"] = pl_generate_password()
+                st.success("Generated a new password!")
+
         with col1:
             password = st.text_input(
-                "Password:", placeholder="Type your password here..."
+                "Password:",
+                placeholder="Type your password here...",
+                key="password_input"
             )
 
         with col2:
-            if st.button("Generate Password"):
-                password = pl_generate_password()
-                st.success("Generated a new password!")
-                st.write(password)
-
             if st.button("Check Strength"):
                 strength(password)
 
@@ -177,6 +184,7 @@ def run_app():
                         st.session_state["stored_master"] = stored_master
                     else:
                         st.error("Error saving password.")
+
 
     elif page == "Saved Passwords":
         st.markdown(
@@ -204,7 +212,10 @@ def run_app():
             if passwords:
                 # Option A: Numbered list
                 for idx, pw in enumerate(passwords[1:], start=1):
-                   st.markdown(f"<p class='saved-password'>Password {idx}: {pw}</p>", unsafe_allow_html=True)
+                    st.markdown(
+                        f"<p class='saved-password'>Password {idx}: {pw}</p>",
+                        unsafe_allow_html=True,
+                    )
 
             else:
                 st.info("No saved passwords yet.")
